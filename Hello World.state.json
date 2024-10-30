@@ -1,0 +1,59 @@
+{
+  "workspaceFoldersFilePaths": [
+    "./"
+  ],
+  "symbols": [],
+  "activeFileDiagnostics": [],
+  "activeTextEditor": {
+    "selections": [
+      {
+        "anchor": {
+          "line": 8,
+          "character": 3
+        },
+        "active": {
+          "line": 8,
+          "character": 3
+        },
+        "isReversed": true
+      }
+    ],
+    "documentFilePath": "./.vscode/launch.json",
+    "visibleRanges": [
+      {
+        "start": {
+          "line": 0,
+          "character": 0
+        },
+        "end": {
+          "line": 21,
+          "character": 0
+        }
+      }
+    ],
+    "languageId": "jsonc"
+  },
+  "debugConsoleOutput": "",
+  "terminalBuffer": "\u001b]633;P;ContinuationPrompt=> \u0007\n\u001b]633;P;Prompt=\\x1b]0\\x3bsulai@pi: ~/projects/webHome/modules/vscode/tracker\\x07\\x1b[01\\x3b32msulai@pi\\x1b[00m:\\x1b[01\\x3b34m~/projects/webHome/modules/vscode/tracker $\\x1b[00m \u0007\u001b]633;A\u0007\u001b]0;sulai@pi: ~/projects/webHome/modules/vscode/tracker\u0007sulai@pi~/projects/webHome/modules/vscode/tracker $ \u001b]633;B\u0007\nn\np\nm\n\r\n\r\u001b]633;E;npm;09a57147-1bc2-4678-9597-a7bd376b9b8d\u0007\u001b]633;C\u0007\nnpm <command>\r\n\r\nUsage:\r\n\r\nnpm install        install all the dependencies in your project\r\nnpm install <foo>  add the <foo> dependency to your project\r\nnpm test           run this project's tests\r\nnpm run <foo>      run the script named <foo>\r\nnpm <command> -h   quick help on <command>\r\nnpm -l             display usage info for all commands\r\nnpm help <term>    search for help on <term>\r\nnpm help npm       more involved overview\r\n\r\nAll commands:\r\n\r\n    access, adduser, audit, bugs, cache, ci, completion,\r\n    config, dedupe, deprecate, diff, dist-tag, docs, doctor,\r\n    edit, exec, explain, explore, find-dupes, fund, get, help,\r\n    help-search, hook, init, install, install-ci-test,\r\n    install-test, link, ll, login, logout, ls, org, outdated,\r\n    owner, pack, ping, pkg, prefix, profile, prune, publish,\r\n    query, rebuild, repo, restart, root, run-script, sbom,\r\n    search, set, shrinkwrap, star, stars, start, stop, team,\r\n    test, token, uninstall, unpublish, unstar, update, version,\r\n    view, whoami\r\n\r\nSpecify configs in the ini-formatted file:\r\n    /home/sulai/.npmrc\r\nor on the command line via: npm <command> --key=value\r\n\r\nMore configuration info: npm help config\r\nConfiguration fields: npm help 7 config\r\n\r\nnpm@10.9.0 /home/sulai/.nvm/versions/node/v23.1.0/lib/node_modules/npm\r\n\n\u001b]633;D;1\u0007\u001b]633;P;Cwd=/home/sulai/projects/webHome/modules/vscode/tracker\u0007\u001b]633;P;Prompt=\\x1b]0\\x3bsulai@pi: ~/projects/webHome/modules/vscode/tracker\\x07\\x1b[01\\x3b32msulai@pi\\x1b[00m:\\x1b[01\\x3b34m~/projects/webHome/modules/vscode/tracker $\\x1b[00m \u0007\u001b]633;A\u0007\u001b]0;sulai@pi: ~/projects/webHome/modules/vscode/tracker\u0007sulai@pi~/projects/webHome/modules/vscode/tracker $ \u001b]633;B\u0007",
+  "terminalLastCommand": {
+    "commandLine": "npm",
+    "exitCode": 1,
+    "output": "npm <command>\n\nUsage:\n\nnpm install        install all the dependencies in your project\nnpm install <foo>  add the <foo> dependency to your project\nnpm test           run this project's tests\nnpm run <foo>      run the script named <foo>\nnpm <command> -h   quick help on <command>\nnpm -l             display usage info for all commands\nnpm help <term>    search for help on <term>\nnpm help npm       more involved overview\n\nAll commands:\n\n    access, adduser, audit, bugs, cache, ci, completion,\n    config, dedupe, deprecate, diff, dist-tag, docs, doctor,\n    edit, exec, explain, explore, find-dupes, fund, get, help,\n    help-search, hook, init, install, install-ci-test,\n    install-test, link, ll, login, logout, ls, org, outdated,\n    owner, pack, ping, pkg, prefix, profile, prune, publish,\n    query, rebuild, repo, restart, root, run-script, sbom,\n    search, set, shrinkwrap, star, stars, start, stop, team,\n    test, token, uninstall, unpublish, unstar, update, version,\n    view, whoami\n\nSpecify configs in the ini-formatted file:\n    /home/sulai/.npmrc\nor on the command line via: npm <command> --key=value\n\nMore configuration info: npm help config\nConfiguration fields: npm help 7 config\n\nnpm@10.9.0 /home/sulai/.nvm/versions/node/v23.1.0/lib/node_modules/npm\n"
+  },
+  "terminalSelection": "",
+  "terminalShellType": "bash",
+  "repoContexts": [
+    {
+      "rootUri": {
+        "$mid": 1,
+        "path": "/home/sulai/projects/webHome/modules/vscode/tracker",
+        "scheme": "file"
+      },
+      "headBranchName": "master",
+      "isRebasing": true,
+      "remotes": [],
+      "remoteFetchUrls": []
+    }
+  ],
+  "notebookDocumentFilePaths": []
+}
