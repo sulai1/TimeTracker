@@ -2,14 +2,18 @@ import * as assert from 'assert';
 
 // You can import and use all API from the 'vscode' module
 // as well as import your extension to test it
-import * as vscode from 'vscode';
+import { connect } from '../database/database';
 // import * as myExtension from '../../extension';
 
 suite('Extension Test Suite', () => {
-	vscode.window.showInformationMessage('Start all tests.');
-
-	test('Sample test', () => {
-		assert.strictEqual(-1, [1, 2, 3].indexOf(5));
-		assert.strictEqual(-1, [1, 2, 3].indexOf(0));
+	test('Sample test', async () => {
+		const client = await connect({
+			user: 'postgres',
+			host: '192.168.0.6',
+			database: 'tracker',
+			password: 'sbg631587'
+		});
+		assert.ok(client);
+		client.migrate('1.0.0');
 	});
 });
