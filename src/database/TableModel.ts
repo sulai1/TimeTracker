@@ -7,6 +7,7 @@ export type TableModel<
 > = {
     create: (model: Model) => Promise<Create>;
     findByPk: (id: { [P in PK]: Model[P] }) => Promise<Model | null>;
+    find: (model: Partial<Model>) => Promise<Model[]>;
     updateByPk: (id: { [P in PK]: Model[P] }, model: Partial<Create>) => Promise<Model | null>;
     deleteByPk: (id: { [P in PK]: Model[P] }) => Promise<boolean>;
 }
@@ -75,6 +76,12 @@ export const tableModel = <
                 return res.rows[0];
             }
             return null;
+        },
+        find: async (model: Partial<Model>) => {
+            const r = zip(model);
+            const match = r.map((x) => x.bind + " = " + x.column).join(" AND ");
+            const res = await database.query<Model>(`SELECT * FROM ${table} WHERE ` + match, { bind: model });
+            return res.rows;
         },
         updateByPk: async (id: { [P in PK]: Model[P] }, model: Partial<Model>) => {
             const { columnsStr } = qv(model);

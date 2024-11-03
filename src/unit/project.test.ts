@@ -15,8 +15,8 @@ const repos: RepositoryView[] = [
         id: key,
         name: "test",
         branches: {
-            master: {
-                name: "master",
+            main: {
+                name: "main",
                 repository: key,
                 commits: [
                     { author: "me", date: new Date(), id: key, message: "hello" }
@@ -78,7 +78,8 @@ describe('Dummy test', () => {
                             author: commit.author,
                         });
                         bc.create({ commit: key, branch: branch.name, repository: key });
-                        expect(await bc.findByPk({ commit: commit.id, branch: branchName, repository: key })).to.deep.equal({
+                        const nbc = await bc.findByPk({ commit: commit.id, branch: branchName, repository: key });
+                        expect(nbc).to.deep.equal({
                             commit: key,
                             branch: branch.name,
                             repository: key,

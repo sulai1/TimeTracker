@@ -4,7 +4,7 @@ import fs from "fs";
 import { exec } from 'child_process';
 import { Commit, Repository, RepositoryView } from './project';
 
-async function gitCommand(command: string, options: { cwd?: string } = { cwd: __dirname }) {
+async function gitCommand(command: string, options: { cwd?: string } = { cwd: __dirname }): Promise<string> {
     return await new Promise<string>((resolve, reject) => {
         exec(`git ` + command,
             { cwd: options.cwd },
@@ -28,8 +28,8 @@ export async function getGitRepo(dir: string, options: {
 
     git.cwd(fs.realpathSync(dir));
     const repoPath = await git.revparse("--show-toplevel");
-    const initial = await gitCommand("rev-list --parents HEAD -1");
-    const initialCommitId = initial.split(" ")[0];
+    const initial = (await gitCommand("log --reverse --format=%H", { cwd: repoPath })).split("\n")[0];
+    const initialCommitId = initial.split("\n")[0];
     const res = await gitCommand(`show --format="%cd %s" --date=format:"${options.dateFormat}" -s ` + initialCommitId, { cwd: repoPath });
 
     const branch = await gitCommand("rev-parse --abbrev-ref HEAD", { cwd: repoPath });
