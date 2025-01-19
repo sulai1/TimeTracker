@@ -19,6 +19,7 @@
 		"migrations/**/*.sql"
 	],
 	"exclude": [
+		"src/unit/**/*.ts",
 		"node_modules",
 		"dist"
 	]

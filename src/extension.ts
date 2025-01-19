@@ -3,11 +3,14 @@
 import path from 'path';
 import * as vscode from 'vscode';
 import { DatabaseConfig } from './database';
-import { mkdir, writeFile } from 'fs/promises';
-import { existsSync } from 'fs';
-import { connect } from './database/database';
-import { getGitRepo } from './database/git';
+import { connect, DatabaseClient } from './database/database';
+import { getGitRepo, RepositoryModels } from './database/git';
+import { Migrator } from './database/migrate';
+import { Log } from './database/project';
 
+let debug = false;
+let client: DatabaseClient & Migrator & Disposable | null = null;
+let batchSize = 10;
 const defaults: DatabaseConfig = {
 	user: "postgres",
 	host: "localhost",
@@ -18,31 +21,17 @@ const defaults: DatabaseConfig = {
 async function init(context: vscode.ExtensionContext) {
 	let vscodeDdir = '';
 	if (vscode.workspace.workspaceFolders) {
-		vscode.window.showInformationMessage('.vscode folder: ' + vscode.workspace.workspaceFolders[0].uri.fsPath);
-
+		if (debug) {
+			vscode.window.showInformationMessage('.vscode folder: ' + vscode.workspace.workspaceFolders[0].uri.fsPath);
+		}
 		vscodeDdir = path.resolve(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath, '.vscode');
-		if (!existsSync(vscodeDdir)) {
-			mkdir(vscodeDdir, { recursive: true }).catch(async (err) => {
-				if (err) {
-					vscode.window.showErrorMessage('Failed to create .vscode directory');
-				} else {
-					vscode.window.showInformationMessage('.vscode directory created');
-				}
-			});
-			return;
-		}
-		const settings = path.resolve(vscodeDdir, 'settings.json');
-		if (!existsSync(settings)) {
-			await writeFile(settings, JSON.stringify(defaults), 'utf-8');
-		}
-		vscode.window.showInformationMessage('wd', vscodeDdir);
 	}
 
 	const cfg = vscode.workspace.getConfiguration('tracker');
 	let config = cfg.get<DatabaseConfig>('database', defaults);
-	let client = null;
+	debug = cfg.get<boolean>('debug', false);
+	batchSize = cfg.get<number>('batchSize', 10);
 	try {
-		vscode.window.showInformationMessage('Connected to database');
 		client = await connect(config);
 	} catch (err) {
 		vscode.window.showErrorMessage('Failed to connect to database');
@@ -63,17 +52,21 @@ async function init(context: vscode.ExtensionContext) {
 		if (password) {
 			config.password = password;
 		}
-
 		try {
 			client = await connect(config);
 			await cfg.update("database", config, vscode.ConfigurationTarget.Global);
-			vscode.window.showInformationMessage('Connected to database with new config');
+			if (debug) {
+				vscode.window.showInformationMessage('Connected to database');
+			}
 		} catch (err) {
-			vscode.window.showErrorMessage('Failed to connect to database with new config');
+			vscode.window.showErrorMessage('Failed to connect to database with new config: ', String(err));
 		}
 	};
 	if (client) {
 		try {
+			if (debug) {
+				vscode.window.showInformationMessage('Migrating database');
+			}
 			await client.migrate('1.0.0');
 		} catch (err) {
 			console.error(err);
@@ -90,20 +83,47 @@ export type Event = {
 	type: EventType,
 	message: string
 }
+const logs: Log[] = [];
+let currentCommit = '';
+let currentBranch = '';
+let repo: RepositoryModels;
 
-async function track(dir: string) {
+async function commitLogs(repo: RepositoryModels) {
+	vscode.window.showInformationMessage('starting logging');
+	const start = Date.now();
+	currentBranch = await repo.currentBranch();
+	currentCommit = await repo.currentCommit();
+	if (client) {
+		await repo.log(...logs);
+		logs.length = 0;
+	}
+	const end = Date.now();
+	const duration = end - start;
+	if (debug) {
+		vscode.window.showInformationMessage(`Logging took ${duration} milliseconds`);
+	}
+}
 
-	let repo = await getGitRepo(dir);
+async function track(dir: string, database: DatabaseClient) {
+	repo = await getGitRepo(dir, database);
+	if (debug) {
+		vscode.window.showInformationMessage('Repository connected');
+	}
 
-	const eventsAkku: Event[] = [];
 	function log(type: EventType, message: string) {
-		console.log(type, message);
-		eventsAkku.push({
-			time: Date.now(),
-			type,
-			message
+		if (debug) {
+			vscode.window.showInformationMessage(type, message);
+		}
+		logs.push({
+			commit: currentCommit,
+			repository: repo.view.id,
+			branch: currentBranch,
+			type: type,
+			file: message,
+			date: new Date()
 		});
-		if (eventsAkku.length > 100) {
+		if (logs.length > batchSize) {
+			commitLogs(repo);
 		}
 	}
 	vscode.workspace.onDidCreateFiles(async (e) => {
@@ -115,9 +135,9 @@ async function track(dir: string) {
 	vscode.workspace.onDidDeleteFiles(async (e) => {
 		log("delete", e.files[0].fsPath);
 	});
-	vscode.workspace.onDidChangeTextDocument(async (e) => {
-		log("change", e.document.fileName);
-	});
+	// vscode.workspace.onDidChangeTextDocument(async (e) => {
+	// 	log("change", e.document.fileName);
+	// });
 
 	//-------------------- window events --------------------//
 	vscode.window.onDidStartTerminalShellExecution(async (e) => {
@@ -130,24 +150,32 @@ async function track(dir: string) {
 
 // This method is called when your extension is activated
 export async function activate(context: vscode.ExtensionContext) {
-	vscode.window.showInformationMessage('Congratulations, your extension "tracker" is now active!');
-
 	let res = await init(context);
 	vscode.commands.registerCommand('tracker.connect', async () => {
 		res = await init(context);
 	});
+	vscode.commands.registerCommand('tracker.sync', async () => {
+		repo.sync();
+	});
+
 	vscode.workspace.onDidChangeConfiguration(async (e) => {
 		if (e.affectsConfiguration('tracker.database')) {
 			res = await init(context);
 		}
 	});
 
-	if (res?.vscodeDdir) {
-		track(res.vscodeDdir);
+	if (res?.vscodeDdir && res.client) {
+		vscode.window.showInformationMessage('Tracker extension is now active');
+		track(res.vscodeDdir, res.client);
 	}
 }
 
 // This method is called when your extension is deactivated
-export function deactivate() {
-
+export async function deactivate() {
+	if (client) {
+		if (repo) {
+			await commitLogs(repo);
+		}
+		await client.end();
+	}
 }

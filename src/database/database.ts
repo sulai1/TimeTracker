@@ -1,7 +1,6 @@
 import pg from 'pg';
-import { check, down, migrate, Migration, Migrator, up } from './migrate';
 import { colorConsole } from 'tracer';
-import { object } from 'zod';
+import { check, down, migrate, Migrator, up } from './migrate';
 
 export type DatabaseConfig = {
     user: string;
@@ -21,14 +20,17 @@ export type DatabaseClient = {
         values?: any[]
         bind?: any
     }) => Promise<pg.QueryResult<T>>;
+    end: () => Promise<void>;
 };
 
-export async function connect(config: DatabaseConfig): Promise<DatabaseClient & Migrator & Disposable> {
+export async function connect(config: DatabaseConfig, options?: { debug?: boolean }): Promise<DatabaseClient & Migrator & Disposable> {
+    const debug = options?.debug;
     const client = (new pg.Client(config));
     await client.connect();
 
     return {
         [Symbol.dispose]: client.end,
+        end: client.end,
         check: async (migrationsPath: string, version: string) => {
             await check(migrationsPath, client, version);
         },
@@ -61,9 +63,13 @@ export async function connect(config: DatabaseConfig): Promise<DatabaseClient & 
                     });
             }
             try {
+                if (debug) {
+                    colorConsole().info(query, options?.values);
+                }
                 const res = await client.query<T, T[]>(query, options?.values);
                 return res;
             } catch (e) {
+
                 colorConsole().error(query, options?.values);
                 throw e;
             }
